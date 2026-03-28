@@ -3,22 +3,58 @@ import './ResultStep.css'
 
 export default function ResultStep({ original, adapted, onReset }) {
   const printRef = useRef()
+  const pdfRef = useRef()
 
   function handlePrint() {
     window.print()
   }
 
   async function handleDownloadPDF() {
-    const html2pdf = (await import('html2pdf.js')).default
-    const element = printRef.current
-    const opt = {
-      margin: [15, 15, 15, 15],
-      filename: 'exam-adapted-dyslexia.pdf',
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, backgroundColor: '#ffffff' },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    const { jsPDF } = await import('jspdf')
+    const pdf = new jsPDF({
+      unit: 'mm',
+      format: 'a4',
+      orientation: 'portrait',
+    })
+
+    const margin = 15
+    const pageWidth = pdf.internal.pageSize.getWidth()
+    const pageHeight = pdf.internal.pageSize.getHeight()
+    const maxWidth = pageWidth - margin * 2
+    const maxY = pageHeight - margin
+
+    let cursorY = margin
+
+    pdf.setTextColor(31, 41, 55)
+    pdf.setFont('helvetica', 'bold')
+    pdf.setFontSize(18)
+    pdf.text('EduGen - Adapted exam for dyslexic students', margin, cursorY)
+
+    cursorY += 10
+    pdf.setFont('helvetica', 'normal')
+    pdf.setFontSize(12)
+    pdf.text('Profile: Dyslexia', margin, cursorY)
+
+    cursorY += 10
+    pdf.setTextColor(17, 24, 39)
+    pdf.setFontSize(15)
+
+    const lines = pdf.splitTextToSize(adapted || '', maxWidth)
+
+    for (const line of lines) {
+      if (cursorY > maxY) {
+        pdf.addPage()
+        cursorY = margin
+        pdf.setTextColor(17, 24, 39)
+        pdf.setFont('helvetica', 'normal')
+        pdf.setFontSize(15)
+      }
+
+      pdf.text(line, margin, cursorY)
+      cursorY += 6
     }
-    html2pdf().set(opt).from(element).save()
+
+    pdf.save('exam-adapted-dyslexia.pdf')
   }
 
   const originalWords = original.trim().split(/\s+/).filter(Boolean).length
@@ -69,7 +105,7 @@ export default function ResultStep({ original, adapted, onReset }) {
         <StatCard label="Original" value={`${originalWords} words`} color="secondary" />
         <StatCard label="Adapted" value={`${adaptedWords} words`} color="primary" />
         <StatCard label="Profile" value="Dyslexia" color="green" />
-        <StatCard label="AI Model" value="Claude Sonnet" color="purple" />
+        <StatCard label="AI Model" value="Gemini 2.5 Flash" color="purple" />
       </div>
 
       {/* Side by side */}
@@ -90,7 +126,7 @@ export default function ResultStep({ original, adapted, onReset }) {
           <div className="divider-line" />
         </div>
 
-        <div className="result-col adapted-col" ref={printRef}>
+        <div className="result-col adapted-col">
           <div className="col-header">
             <span className="col-badge adapted-badge">Adapted · Dyslexia</span>
             <span className="col-words">{adaptedWords} words</span>
@@ -98,6 +134,15 @@ export default function ResultStep({ original, adapted, onReset }) {
           <div className="col-body adapted-body">
             <pre>{adapted}</pre>
           </div>
+        </div>
+      </div>
+
+      <div className="pdf-export" ref={pdfRef}>
+        <div className="print-header">
+          <strong>EduGen</strong> Â· Adapted exam for dyslexic students
+        </div>
+        <div className="print-content">
+          {adapted}
         </div>
       </div>
 

@@ -7,16 +7,29 @@ export default function App() {
   const [step, setStep] = useState('upload')
   const [originalText, setOriginalText] = useState('')
   const [adaptedText, setAdaptedText] = useState('')
+  const [errorMessage, setErrorMessage] = useState('')
 
   function handleAdapted(original, adapted) {
     setOriginalText(original)
     setAdaptedText(adapted)
+    setErrorMessage('')
     setStep('result')
+  }
+
+  function handleLoading() {
+    setErrorMessage('')
+    setStep('loading')
+  }
+
+  function handleAdaptError(message) {
+    setErrorMessage(message)
+    setStep('upload')
   }
 
   function handleReset() {
     setOriginalText('')
     setAdaptedText('')
+    setErrorMessage('')
     setStep('upload')
   }
 
@@ -46,7 +59,9 @@ export default function App() {
         {step === 'upload' && (
           <UploadStep
             onAdapted={handleAdapted}
-            onLoading={() => setStep('loading')}
+            onLoading={handleLoading}
+            onAdaptError={handleAdaptError}
+            errorMessage={errorMessage}
           />
         )}
 
@@ -55,7 +70,7 @@ export default function App() {
             <div className="loading-card">
               <div className="loading-orb" />
               <h2 className="loading-title">Adapting your exam</h2>
-              <p className="loading-sub">Claude is rewriting the content for dyslexic students…</p>
+              <p className="loading-sub">Google Gemini is rewriting the content for dyslexic students…</p>
               <div className="loading-steps">
                 <LoadingLine text="Reading exam content" delay="0s" />
                 <LoadingLine text="Simplifying instructions" delay="0.6s" />

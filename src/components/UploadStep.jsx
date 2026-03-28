@@ -1,31 +1,32 @@
 import { useState, useRef, useCallback } from 'react'
 import { extractTextFromFile } from '../utils/fileExtractor'
-import { adaptExamForDyslexia } from '../utils/claudeApi'
+import { adaptExamForDyslexia } from '../utils/googleApi'
 import './UploadStep.css'
 
-export default function UploadStep({ onAdapted, onLoading }) {
+export default function UploadStep({ onAdapted, onLoading, onAdaptError, errorMessage }) {
   const [file, setFile] = useState(null)
   const [extractedText, setExtractedText] = useState('')
   const [dragging, setDragging] = useState(false)
   const [extracting, setExtracting] = useState(false)
-  const [error, setError] = useState('')
+  const [localError, setLocalError] = useState('')
   const inputRef = useRef()
+  const error = localError || errorMessage
 
   const handleFile = useCallback(async (f) => {
     if (!f) return
     const ext = f.name.split('.').pop().toLowerCase()
     if (!['pdf', 'docx'].includes(ext)) {
-      setError('Only PDF and DOCX files are supported.')
+      setLocalError('Only PDF and DOCX files are supported.')
       return
     }
-    setError('')
+    setLocalError('')
     setFile(f)
     setExtracting(true)
     try {
       const text = await extractTextFromFile(f)
       setExtractedText(text)
     } catch (e) {
-      setError(e.message)
+      setLocalError(e.message)
       setFile(null)
     } finally {
       setExtracting(false)
@@ -41,13 +42,13 @@ export default function UploadStep({ onAdapted, onLoading }) {
 
   async function handleAdapt() {
     if (!extractedText) return
+    setLocalError('')
     onLoading()
     try {
       const adapted = await adaptExamForDyslexia(extractedText)
       onAdapted(extractedText, adapted)
     } catch (e) {
-      // Return to upload and show error
-      setError('Claude API error: ' + e.message)
+      onAdaptError('Google Generative AI error: ' + e.message)
     }
   }
 
@@ -62,7 +63,7 @@ export default function UploadStep({ onAdapted, onLoading }) {
         <div className="hero-tag">Phase 1 · Upload</div>
         <h1 className="hero-title">Upload your exam</h1>
         <p className="hero-sub">
-          Drop a PDF or DOCX file. EduGen will instantly adapt it<br />for students with dyslexia using Claude AI.
+          Drop a PDF or DOCX file. EduGen will instantly adapt it<br />for students with dyslexia using Google Gemini.
         </p>
       </div>
 
