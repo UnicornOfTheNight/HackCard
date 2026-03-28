@@ -17,6 +17,7 @@ When adapting an exam, follow these strict rules:
 11. DO NOT use Markdown formatting
 12. DO NOT use characters like "#", "*", "**", "-", or backticks for headings or emphasis unless they already exist in the original exam content
 13. Return plain text only, ready to print as an exam document
+14. Structure the text so it is easy to render with the OpenDyslexic font: short lines, clear spacing, simple headings, and no decorative formatting
 
 Output only the adapted exam text - no commentary, no explanation, no preamble.
 Maintain the same language as the original exam (French or English).`

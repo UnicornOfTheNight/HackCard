@@ -1,3 +1,6 @@
+@import '@fontsource/opendyslexic';
+@import '@fontsource/opendyslexic/700.css';
+
 *, *::before, *::after {
   margin: 0;
   padding: 0;

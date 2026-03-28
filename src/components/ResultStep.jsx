@@ -4,13 +4,28 @@ import './ResultStep.css'
 export default function ResultStep({ original, adapted, onReset }) {
   const printRef = useRef()
   const pdfRef = useRef()
+  const adaptedRef = useRef()
 
   function handlePrint() {
     window.print()
   }
 
   async function handleDownloadPDF() {
-    const { jsPDF } = await import('jspdf')
+    const [{ jsPDF }, { default: html2canvas }] = await Promise.all([
+      import('jspdf'),
+      import('html2canvas'),
+    ])
+
+    const element = adaptedRef.current
+    if (!element) return
+
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      backgroundColor: '#f7fbff',
+      useCORS: true,
+    })
+
+    const imageData = canvas.toDataURL('image/png')
     const pdf = new jsPDF({
       unit: 'mm',
       format: 'a4',
@@ -20,38 +35,20 @@ export default function ResultStep({ original, adapted, onReset }) {
     const margin = 15
     const pageWidth = pdf.internal.pageSize.getWidth()
     const pageHeight = pdf.internal.pageSize.getHeight()
-    const maxWidth = pageWidth - margin * 2
-    const maxY = pageHeight - margin
+    const contentWidth = pageWidth - margin * 2
+    const contentHeight = (canvas.height * contentWidth) / canvas.width
 
-    let cursorY = margin
+    let remainingHeight = contentHeight
+    let offsetY = 0
 
-    pdf.setTextColor(31, 41, 55)
-    pdf.setFont('helvetica', 'bold')
-    pdf.setFontSize(18)
-    pdf.text('EduGen - Adapted exam for dyslexic students', margin, cursorY)
+    pdf.addImage(imageData, 'PNG', margin, margin, contentWidth, contentHeight)
+    remainingHeight -= pageHeight - margin * 2
 
-    cursorY += 10
-    pdf.setFont('helvetica', 'normal')
-    pdf.setFontSize(12)
-    pdf.text('Profile: Dyslexia', margin, cursorY)
-
-    cursorY += 10
-    pdf.setTextColor(17, 24, 39)
-    pdf.setFontSize(15)
-
-    const lines = pdf.splitTextToSize(adapted || '', maxWidth)
-
-    for (const line of lines) {
-      if (cursorY > maxY) {
-        pdf.addPage()
-        cursorY = margin
-        pdf.setTextColor(17, 24, 39)
-        pdf.setFont('helvetica', 'normal')
-        pdf.setFontSize(15)
-      }
-
-      pdf.text(line, margin, cursorY)
-      cursorY += 6
+    while (remainingHeight > 0) {
+      offsetY -= pageHeight - margin * 2
+      pdf.addPage()
+      pdf.addImage(imageData, 'PNG', margin, margin + offsetY, contentWidth, contentHeight)
+      remainingHeight -= pageHeight - margin * 2
     }
 
     pdf.save('exam-adapted-dyslexia.pdf')
@@ -126,7 +123,7 @@ export default function ResultStep({ original, adapted, onReset }) {
           <div className="divider-line" />
         </div>
 
-        <div className="result-col adapted-col">
+        <div className="result-col adapted-col" ref={adaptedRef}>
           <div className="col-header">
             <span className="col-badge adapted-badge">Adapted · Dyslexia</span>
             <span className="col-words">{adaptedWords} words</span>
