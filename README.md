@@ -1,1 +1,1 @@
-# HackCard
+# EduGen
