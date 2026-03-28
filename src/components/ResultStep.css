@@ -220,12 +220,30 @@
   top: 0;
   width: 210mm;
   min-height: 297mm;
-  font-family: 'Arial', sans-serif;
-  color: #000;
+  font-family: 'OpenDyslexic', 'Arial', sans-serif;
+  color: #111827;
   background: #fff;
   padding: 20mm;
   box-sizing: border-box;
   z-index: -1;
+}
+
+.pdf-export .print-header {
+  font-size: 12pt;
+  color: #555;
+  border-bottom: 1pt solid #ccc;
+  padding-bottom: 8pt;
+  margin-bottom: 20pt;
+}
+
+.pdf-export .print-content {
+  font-family: 'OpenDyslexic', 'Arial', 'Helvetica', sans-serif;
+  color: #111827;
+  font-size: 17pt;
+  font-weight: 600;
+  line-height: 2.45;
+  letter-spacing: 0.03em;
+  white-space: pre-wrap;
 }
 
 .print-only { display: none; }

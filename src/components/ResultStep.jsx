@@ -16,7 +16,7 @@ export default function ResultStep({ original, adapted, onReset }) {
       import('html2canvas'),
     ])
 
-    const element = adaptedRef.current
+    const element = pdfRef.current
     if (!element) return
 
     const canvas = await html2canvas(element, {
